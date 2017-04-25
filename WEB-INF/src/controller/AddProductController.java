@@ -1,23 +1,108 @@
 package controller;
 
+import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
 
-import model.ProductModel;
-
-@WebServlet(urlPatterns = {"/addProductController.do"})
+import model.*;
+import service.*;
+/**
+ * å•†å®¶æ–°åŠ å•†å“
+ */
+@WebServlet("/addproduct.do")
+@MultipartConfig
 public class AddProductController extends HttpServlet {
-	public void doPost(HttpServletRequest request,HttpServletResponse response)
-			throws ServletException,IOException {
-		response.setContentType("text/html;charset=utf-8");
-		//½ÓÊÕËùÓĞµÄ£¬ÓÃ»§ÊäÈëµÄ£¬ÉÌÆ·ĞÅÏ¢¡£±£´æµ½ProductModel product¶ÔÏóÖĞ
-		//µ÷ÓÃProductInfoServiceµÄsaveProduct(ProductModel product)·½·¨Ìí¼ÓÉÌÆ·
-		//Èç¹ûÌí¼Ó´íÎó£¬¼´·µ»ØÖµÎªfalse£¬ÔòÌø×ªµ½supplierAddProduct.jsp½çÃæ£¬ÌáÊ¾ÓÃ»§´íÎó²¢ĞŞ¸Ä
-		//
+	private static final long serialVersionUID = 1L;
+       
+    /**
+     * @see HttpServlet#HttpServlet()
+     */
+    public AddProductController() {
+        super();
+        // TODO Auto-generated constructor stub
+    }
+
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		//æ¥å—jspé¡µé¢ä¼ é€çš„æ•°æ®
+		String path="../images/";
+	    String imagePath =request.getSession().getServletContext().getRealPath("")+"/images/";
+		HttpSession session=request.getSession();
+		Part image=request.getPart("image");
+		String message="";
+		String productName=request.getParameter("productName");
+		String origin=request.getParameter("origin");
+		String date=request.getParameter("date");
+		String life=request.getParameter("life");
+		String price=request.getParameter("price");
+		String introduction=request.getParameter("introduction");
+		String storedid=request.getParameter("storedid");
+		String stockNum=request.getParameter("stockNum");
+		int sid=(int)session.getAttribute("Supplierid");
+		
+		if(image==null){
+			message="ç¼ºå°‘å›¾ç‰‡æ–‡ä»¶";
+			session.setAttribute("message", message);
+			session.setAttribute("flag", true);
+			response.sendRedirect("jsp/supplierAddProduct.jsp");
+		}else if(image.getSize()>3*1024*1024) {
+			image.delete();
+			message="å›¾ç‰‡æ–‡ä»¶å¤ªå¤§ï¼Œè¯·é‡æ–°é€‰æ‹©";
+			session.setAttribute("message", message);
+			session.setAttribute("flag", true);
+			response.sendRedirect("jsp/supplierAddProduct.jsp");
+		//è¿æ¥æ•°æ®åº“è°ƒç”¨å­˜å‚¨è¿‡ç¨‹ï¼Œå¹¶å­˜æ”¾å›¾ç‰‡
+		}else{
+			SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+			//SimpleDateFormat df1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			String time=df.format(new Date());
+			path=path+sid+"_"+time+".jpg";
+			imagePath=imagePath+sid+"_"+time+".jpg";
+			ProductModel pModel=new ProductModel();
+			pModel.setdate(date);
+			pModel.setname(productName);
+			pModel.setorgin(origin);
+			pModel.setprice(Float.parseFloat(price));
+			pModel.setsid(sid);
+			pModel.setimage(path);
+			pModel.setlife(life);
+			pModel.setstocknum(Integer.parseInt(stockNum));
+			pModel.setstoredid(Integer.parseInt(storedid));
+			pModel.setintroduction(introduction);
+			ProductInfoService pService=new ProductInfoService();
+			int stat=pService.addProductToProduct(pModel);
+			if(stat==0){
+				File file=new File(imagePath);
+				file.createNewFile();
+				image.write(imagePath);
+				message="æ¸¸æˆå‘å¸ƒæˆåŠŸï¼";
+				session.setAttribute("message", message);
+				session.setAttribute("flag", true);
+				response.sendRedirect("jsp/supplierindex.jsp");
+			}else{
+				message="æ·»åŠ å¤±è´¥";
+				session.setAttribute("message", message);
+				session.setAttribute("flag", true);
+				response.sendRedirect("jsp/supplierAddProduct.jsp");
+			}
+		}
 	}
+
+	/**
+	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		doGet(request, response);
+	}
+
 }
