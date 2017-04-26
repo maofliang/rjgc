@@ -1,27 +1,23 @@
 package dao;
 
+import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
-import model.ProductModel;
 
 public class ProductDao {
-	/*获取完整产品对象*/
-	public ProductModel getProductByProductid(ProductModel product) throws SQLException {
-		//根据product中的Productid查询数据库，获取完整的产品对象，写回到product中
-		return product;
-	}
-	
-	public List<ProductModel> getProductBySupplierid(int Supplierid){
-		List<ProductModel> productList =new ArrayList<ProductModel>();
-		//调用getProductByProductid(ProductModel product)方法获取完整产品信息
-		return productList;
-	}
-	
-	public boolean addProductToProduct(ProductModel product){
-		boolean i=false;
-		//将product中的数据加入Product表中
-		return i;
+	private String driver = "com.mysql.jdbc.Driver";
+	private String dburl = "jdbc:mysql://localhost:3306/rjgc?user=root&password=123456&useUnicode=true&characterEncoding=utf8";
+	private java.sql.Connection conn =null;
+	public java.sql.Connection getConnect(){
+		try {
+			Class.forName(driver);
+			conn = DriverManager.getConnection(dburl);
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return conn;
 	}
 }
